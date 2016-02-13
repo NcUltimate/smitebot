@@ -2,6 +2,7 @@ require 'snoo'
 require 'smite'
 require 'set'
 require_relative './smite_parser.tab.rb'
+require_relative './smite_formatter.rb'
 
 class SmiteBot
   SUBREDDIT = 'smiteinfobot'
@@ -58,23 +59,35 @@ class SmiteBot
     comments = reddit.get_comments(link_id: post_id, limit: 1000, depth: 1000)
     comments = get_all_comments(comments[1]).map do |comment|
       { 
-        id:           comment[0],
-        scanned_body: comment[1].scan(/\{\{(.+?)\}\}/).flatten.map { |k| k.downcase.strip }
+        id:       comment[0],
+        requests: comment[1].scan(/\{\{(.+?)\}\}/).flatten.map { |k| k.downcase.strip }
       }
     end
-    comments = comments.reject { |comment| comment[:scanned_body].empty? }
-    comments.map { |comment| comment[:scanned_body].map { |req| parser.parse(req) } }
+    comments.reject { |comment| comment[:requests].empty? }
+  end
+
+  def process_replies(comments)
+    comments.each do |comment|
+      comment[:requests].map! do |req|
+        parsed = parser.parse(req) rescue nil
+        next nil unless parsed
+
+        p parsed
+        SmiteFormatter.format!(parsed)
+      end
+    end
+    comments
   end
 
   def run!
-    puts "Scanning posts..."
     loop do
       posts = get_top_100_posts
       posts.each do |post_id|
         comments = comments_that_need_reply(post_id)
         sleep(0.5)
         next if comments.empty?
-        p comments
+
+        p process_replies(comments)
       end
       sleep(200)
     end

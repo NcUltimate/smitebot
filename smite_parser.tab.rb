@@ -18,8 +18,6 @@ def parse(str)
       @q.push [:GOD, $&.downcase]
     when /\A(#{items})/i
       @q.push [:ITEM, $&.downcase]
-    when /\A\d+/
-      @q.push [:NUM, $&.to_i]
     when /\A1st/i
       @q.push [:FIRST, $&.to_i]
     when /\A2nd/i
@@ -30,10 +28,12 @@ def parse(str)
       @q.push [:FOURTH, $&.to_i]
     when /\A5th/i
       @q.push [:FIFTH, $&.to_i]
+    when /\A\d+/
+      @q.push [:NUM, $&.to_i]
     when /\Aability/i
       @q.push [:ABILITY, $&.downcase]
     when /\Aultimate/i
-      @q.push [:FOURTH, '4th']
+      @q.push [:FOURTH, 4]
       @q.push [:ABILITY, 'ability']
     when /\Apassive/i
       @q.push [:PASSIVE, $&.downcase]
@@ -79,11 +79,11 @@ def pantheons
 end
 
 def gods
-  @gods ||= Smite::Game.gods.map { |g| g.name.downcase.tr("'", '') }.join('|')
+  @gods ||= Smite::Game.gods.map { |g| g.name.downcase }.join('|')
 end
 
 def items
-  @items ||= Smite::Game.devices.map { |d| d.name.downcase.tr("'", '') }.join('|')
+  @items ||= Smite::Game.devices.map { |d| d.name.downcase }.join('|')
 end
 
 def next_token
