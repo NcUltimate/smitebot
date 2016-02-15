@@ -6,7 +6,7 @@ class SmiteParser
   information:
     god_info
     | item_info
-    | search_info { result = result.to_a }
+    | search_info
 
   god_info:
     GOD {
@@ -14,6 +14,7 @@ class SmiteParser
     }
     | god_ability
     | god_stats
+    | god_items
 
   god_stats:
     GOD STATS level_and_items{
@@ -63,6 +64,18 @@ class SmiteParser
   nth:
     FIRST | SECOND | THIRD | FOURTH | FIFTH
 
+  god_items:
+    GOD RECOMMENDED {
+      recommended_items = Smite::Game.god_recommended_items(val[0])[0].data
+      result            = { 
+        type: 'god_items',
+        data: {
+          god:     val[0],
+          result:  recommended_items
+        }
+      }
+    }
+
   item_info:
     ITEM {
       result = Smite::Game.item(val[0])
@@ -76,30 +89,48 @@ class SmiteParser
 
   search_info:
     search_info search_item {
-      result = Set.new(val[0]) & Set.new(val[1])
+      query         = val[0][:data][:query] + ' ' + val[1][:data][:query]
+      search_result = Set.new(val[0][:data][:result]) & Set.new(val[1][:data][:result])
+      result = { type: 'search', data: { query: query, result: search_result.to_a } }
     }
     | search_item
 
   search_item:
     DMG_TYPE { 
-      result = Smite::Game.gods.select do |g|
+      filter = Smite::Game.gods.select do |g|
         val[0] =~ /phys/ ? g.physical? : g.magic?
       end
+      result = {
+        type: 'search',
+        data: { query:  val[0], result: filter }
+      }
     }
     | ATK_RANGE { 
-      result = Smite::Game.gods.select do |g|
+      filter = Smite::Game.gods.select do |g|
         val[0] =~ /melee/ ? g.melee? : g.ranged?
       end
+      result = {
+        type: 'search',
+        data: { query:  val[0], result: filter }
+      }
     }
     | ROLE { 
-      result = Smite::Game.gods.select do |g|
+      filter = Smite::Game.gods.select do |g|
         val[0].downcase == g.role.downcase
       end
+      result = {
+        type: 'search',
+        data: { query:  val[0], result: filter }
+      }
     }
     | PANTHEON { 
-      result = Smite::Game.gods.select do |g|
+      filter = Smite::Game.gods.select do |g|
         val[0].downcase == g.pantheon.downcase
       end
+      result = {
+        type: 'search',
+        data: { query:  val[0], result: filter }
+      }
     }
 
 end
@@ -115,10 +146,10 @@ def parse(str)
   until str.empty?
     case str
     when /\A\s+/
-    when /\A(#{gods})/i
-      @q.push [:GOD, $&.downcase]
     when /\A(#{items})/i
       @q.push [:ITEM, $&.downcase]
+    when /\A(#{gods})/i
+      @q.push [:GOD, $&.downcase]
     when /\A1st/i
       @q.push [:FIRST, $&.to_i]
     when /\A2nd/i
@@ -138,6 +169,8 @@ def parse(str)
       @q.push [:ABILITY, 'ability']
     when /\Apassive/i
       @q.push [:PASSIVE, $&.downcase]
+    when /\A(recommended )?items/i
+      @q.push [:RECOMMENDED, $&.downcase]
     when /\Aeffects/i
       @q.push [:EFFECTS, $&.downcase]
     when /\Awith/i

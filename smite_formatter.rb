@@ -3,12 +3,16 @@ require 'smite'
 class SmiteFormatter
   class << self
     def format!(smite_obj)
-      p smite_obj.class
       case smite_obj.class.to_s
       when 'Smite::God'       then format_god(smite_obj)
       when 'Smite::Ability'   then format_ability(smite_obj)
       when 'Smite::Item'      then format_item(smite_obj)
       when 'Smite::GodStats'  then format_god_stats(smite_obj)
+      when 'Hash'
+        case smite_obj[:type]
+        when 'god_items' then format_god_items(smite_obj[:data])
+        when 'search'    then format_search_results(smite_obj[:data])
+        end
       end
     end
 
@@ -72,8 +76,39 @@ class SmiteFormatter
     end
 
     def format_god_stats(stats)
+      <<-STATS
 
+      STATS
     end
+
+    def format_god_items(god_item_data)
+      item_data = god_item_data[:result].except('consumable')
+      item_data = item_data.slice(*%w[starter core damage defensive relic])
+      keys, table = build_item_table(item_data)      
+      <<-GODITEMS
+### **Recommended Items** for **#{god_item_data[:god].capitalize}**
+---
+#{keys}
+| :---: | :---: | :---: | :---: | :---: |
+#{table.join}
+---
+**NB:** These items are pulled directly from Smite's API and may not actually be the best items for this god.
+      GODITEMS
+    end
+
+    def format_search_results(results)
+      display_results = results[:result].map do |g| 
+        "#{godflair(g)} **#{g.name}** *(#{g.pantheon} #{g.role})*"
+      end
+      display_results = display_results.empty? ? ['*(No Results)*'] : display_results
+      <<-SEARCH
+### **Search Results** for **#{results[:query]}**
+---
+#{display_results.join("\n\n")}
+      SEARCH
+    end
+
+    private
 
     def item_tag(item)
       if item.cost == 0
@@ -87,8 +122,17 @@ class SmiteFormatter
       end
     end
 
+    def build_item_table(item_data)
+      keys       = '|' + item_data.keys.map(&:capitalize).join('|') + "|"
+      item_data  = item_data.values.map { |tab| tab.map(&:name) }
+      item_data  = item_data.map { |val| val.count == 3 ? val + [''] : val }.transpose
+      item_data  = item_data.map { |tab| '|' + tab.join('|') + "|\n" }
+
+      [keys, item_data]
+    end
+
     def godflair(god)
-      "[](#/flair#{god.name.downcase.gsub(/^w/,'')})"
+      "[](#/flair#{god.name.downcase.gsub(/[^\w]/,'')})"
     end
   end
 end
