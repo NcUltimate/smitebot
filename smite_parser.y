@@ -6,7 +6,8 @@ class SmiteParser
   information:
     god_info
     | item_info
-    | search_info
+    | god_search
+    | item_search
 
   god_info:
     GOD {
@@ -24,7 +25,6 @@ class SmiteParser
 
       result
     }
-
   level_and_items:
     LEVEL NUM WITH item_list{
       result = { level: val[1], items: val[3] }
@@ -80,28 +80,23 @@ class SmiteParser
     ITEM {
       result = Smite::Game.item(val[0])
     }
-    | ITEM PASSIVE {
-      result = Smite::Game.item(val[0]).passive
-    }
-    | ITEM EFFECTS {
-      result = Smite::Game.item(val[0]).effects
-    }
 
-  search_info:
-    search_info search_item {
+  god_search:
+    GODSEARCH god_search_info { result = val[1] }
+  god_search_info:
+    god_search_info search_god {
       query         = val[0][:data][:query] + ' ' + val[1][:data][:query]
       search_result = Set.new(val[0][:data][:result]) & Set.new(val[1][:data][:result])
-      result = { type: 'search', data: { query: query, result: search_result.to_a } }
+      result = { type: 'godsearch', data: { query: query, result: search_result.to_a } }
     }
-    | search_item
-
-  search_item:
+    | search_god
+  search_god:
     DMG_TYPE { 
       filter = Smite::Game.gods.select do |g|
         val[0] =~ /phys/ ? g.physical? : g.magic?
       end
       result = {
-        type: 'search',
+        type: 'godsearch',
         data: { query:  val[0], result: filter }
       }
     }
@@ -110,7 +105,7 @@ class SmiteParser
         val[0] =~ /melee/ ? g.melee? : g.ranged?
       end
       result = {
-        type: 'search',
+        type: 'godsearch',
         data: { query:  val[0], result: filter }
       }
     }
@@ -119,7 +114,7 @@ class SmiteParser
         val[0].downcase == g.role.downcase
       end
       result = {
-        type: 'search',
+        type: 'godsearch',
         data: { query:  val[0], result: filter }
       }
     }
@@ -128,7 +123,46 @@ class SmiteParser
         val[0].downcase == g.pantheon.downcase
       end
       result = {
-        type: 'search',
+        type: 'godsearch',
+        data: { query:  val[0], result: filter }
+      }
+    }
+
+
+  item_search:
+    ITEMSEARCH item_search_info { result = val[1] }
+  item_search_info:
+    item_search_info search_item {
+      query         = val[0][:data][:query] + ' ' + val[1][:data][:query]
+      search_result = Set.new(val[0][:data][:result]) & Set.new(val[1][:data][:result])
+      result = { type: 'itemsearch', data: { query: query, result: search_result.to_a } }
+    }
+    | search_item
+  search_item:
+    ITEM_EFFECT {
+      filter = Smite::Game.devices.select do |i|
+        i.effects.map(&:attribute).any? do |eff|
+          eff.tr('_', ' ') =~ /#{val[0]}/
+        end
+      end
+      result = {
+        type: 'itemsearch',
+        data: { query:  val[0], result: filter }
+      }
+    }
+    | TIER NUM {
+      filter = Smite::Game.devices.select { |i| i.tier == val[1] }
+      result = {
+        type: 'itemsearch',
+        data: { query:  val.join(' '), result: filter }
+      }
+    }
+    | DMG_TYPE { 
+      filter = Smite::Game.devices.select do |i|
+        val[0] =~ /magic/ ? i.magic? : i.physical?
+      end
+      result = {
+        type: 'itemsearch',
         data: { query:  val[0], result: filter }
       }
     }
@@ -162,23 +196,29 @@ def parse(str)
       @q.push [:FIFTH, $&.to_i]
     when /\A\d+/
       @q.push [:NUM, $&.to_i]
-    when /\Aability/i
+    when /\Aability\b/i
       @q.push [:ABILITY, $&.downcase]
-    when /\Aultimate/i
+    when /\Aultimate\b/i
       @q.push [:FOURTH, 4]
       @q.push [:ABILITY, 'ability']
-    when /\Apassive/i
+    when /\Apassive\b/i
       @q.push [:PASSIVE, $&.downcase]
-    when /\A(recommended )?items/i
+    when /\A(recommended )?items\b/i
       @q.push [:RECOMMENDED, $&.downcase]
-    when /\Aeffects/i
-      @q.push [:EFFECTS, $&.downcase]
-    when /\Awith/i
+    when /\Awith\b/i
       @q.push [:WITH, $&.downcase]
+    when /\Atier\b/i
+      @q.push [:TIER, $&.downcase]
+    when /\Agodsearch\b/i
+      @q.push [:GODSEARCH, $&.downcase]
+    when /\Aitemsearch\b/i
+      @q.push [:ITEMSEARCH, $&.downcase]
     when /\A(base )?stats/i
       @q.push [:STATS, $&.downcase]
     when /\A(at )?level/i
       @q.push [:LEVEL, $&.downcase]
+    when /\A(#{effects})/i
+      @q.push [:ITEM_EFFECT, $&.downcase]
     when /\A(#{dmg_types})/i
       @q.push [:DMG_TYPE, $&.downcase]
     when /\A(#{atk_ranges})/i
@@ -205,19 +245,29 @@ def atk_ranges
 end
 
 def roles
-  @roles ||= Smite::Game.roles.join('|')
+  @roles ||= Smite::Game.roles.map { |r| r.downcase + '\b' }.join('|')
 end
 
 def pantheons
-  @pantheons ||= Smite::Game.pantheons.join('|')
+  @pantheons ||= Smite::Game.pantheons.map { |p| p.downcase + '\b' }.join('|')
 end
 
 def gods
-  @gods ||= Smite::Game.gods.map { |g| g.name.downcase }.join('|')
+  @gods ||= Smite::Game.gods.sort_by(&:length).reverse.map { |g| g.name.downcase + '\b' }.join('|')
 end
 
 def items
-  @items ||= Smite::Game.devices.map { |d| d.name.downcase }.join('|')
+  @items ||= Smite::Game.devices.sort_by(&:length).reverse.map { |d| d.name.downcase + '\b'  }.join('|')
+end
+
+def effects
+  return @effects unless @effects.nil?
+
+  @effects ||= Smite::Game.devices.map(&:effects).flatten.map do |e|
+    e.attribute.downcase.tr('_', ' ')
+  end
+  @effects += ['penetration', 'lifesteal', 'defense', 'power', 'crit', 'movement', 'speed']
+  @effects = @effects.uniq.sort_by(&:length).reverse.join('\b|')
 end
 
 def next_token

@@ -10,29 +10,28 @@ class SmiteFormatter
       when 'Smite::GodStats'  then format_god_stats(smite_obj)
       when 'Hash'
         case smite_obj[:type]
-        when 'god_items' then format_god_items(smite_obj[:data])
-        when 'search'    then format_search_results(smite_obj[:data])
+        when 'god_items'  then format_god_items(smite_obj[:data])
+        when 'godsearch'  then format_god_search_results(smite_obj[:data])
+        when 'itemsearch' then format_item_search_results(smite_obj[:data])
         end
       end
     end
 
     def format_god(god)
       a     = god.abilities.map(&:summary)
-      wiki  = "http://smite.gamepedia.com/#{god.name.downcase}"
       <<-GOD
 ### **#{god.name}** *(#{god.pantheon} #{god.role})* -- #{god.title}
 ---
-#{godflair(god)} #{god.short_lore}
+#{godflair(god.name)} #{god.short_lore}
 
 **Pros:** #{god.pros}
 
-| Passive | Ability 1 | Ability 2 | Ability 3 | Ultimate |
+| Ability 1 | Ability 2 | Ability 3 | Ultimate | Passive |
 | :---: | :---: | :---: | :---: | :---: |
 | #{a[0]} | #{a[1]} | #{a[2]} | #{a[3]} | #{a[4]} |
 
 ---
-[God Icon](#{god.god_icon_url}) -- [Card Art](#{god.god_card_url}) -- [Wiki](#{wiki})
----
+[God Icon](#{god.god_icon_url}) -- [Card Art](#{god.god_card_url}) -- [Wiki](#{wiki(god.name)}) -- [Report Bug](#{bug_report})
       GOD
     end
 
@@ -41,17 +40,16 @@ class SmiteFormatter
       ability_data  = (ability.menuitems + ability.rankitems).map do |map|
         ["> **#{map['description']}**", map['value']].join(' ')
       end
-      ability_data << "> **Cooldown:** #{ability.cooldown}"
+      ability_data << "> **Cooldown:** #{ability.cooldown}" if ability.number != 5
       <<-ABILITY
-### **#{ability.name}** *(#{god.name}'s #{ability.which})*
+### **#{ability.name}** *(#{god.name} #{ability.which})*
 ---
-#{godflair(god)} #{ability.description}
+#{godflair(god.name)} #{ability.description}
 
 #{ability_data.join("\n\n")}
 
 ---
-[Ability Icon](#{ability.url}) -- [Wiki](http://www.http://smite.gamepedia.com/#{god.name})
----
+[Ability Icon](#{ability.url}) -- [Wiki](#{wiki(god.name)} -- [Report Bug](#{bug_report})
       ABILITY
     end
 
@@ -70,14 +68,28 @@ class SmiteFormatter
 > #{item.passive}
 
 ---
-[Item Icon](#{item.item_icon_url}) -- [Wiki](http://smite.gamepedia.com/#{item.name})
----
+[Item Icon](#{item.item_icon_url}) -- [Wiki](#{wiki(item.name)}) -- [Report Bug](#{bug_report})
       ITEM
     end
 
     def format_god_stats(stats)
+      items = stats.items.map(&:name).join(', ')
+      items = items == '' ? 'No Items' : items
       <<-STATS
+### #{stats.name} God Stats (Level #{stats.level + 1})
+---
+#{godflair(stats.name)} **With Items:** *#{items}*
 
+| Attribute | Value | Attribute | Value |
+| --- | --- | --- | --- |
+| *Health* | **#{stats.health}** | *Mana* | **#{stats.mana}** |
+| *Attack Speed* | **#{stats.attack_speed}** | *Movement Speed* | **#{stats.movement_speed}** |
+| *HP5* | **#{stats.hp5}** | *MP5* | **#{stats.mp5}**|
+| *Physical Power* | **#{stats.physical_power}** | *Magical Power* | **#{stats.magical_power}** |
+| *Physical Protection* | **#{stats.physical_protection}** | *Magical Protection* | **#{stats.magic_protection}** |
+      
+---
+[God Wiki](#{wiki(stats.name)}) -- [Report Bug](#{bug_report})
       STATS
     end
 
@@ -91,21 +103,42 @@ class SmiteFormatter
 #{keys}
 | :---: | :---: | :---: | :---: | :---: |
 #{table.join}
----
+
 **NB:** These items are pulled directly from Smite's API and may not actually be the best items for this god.
+
+---
+[God Wiki](#{wiki(god_item_data[:god])}) -- [Report Bug](#{bug_report})
       GODITEMS
     end
 
-    def format_search_results(results)
+    def format_god_search_results(results)
       display_results = results[:result].map do |g| 
-        "#{godflair(g)} **#{g.name}** *(#{g.pantheon} #{g.role})*"
+        "#{godflair(g.name)} **#{g.name}** *(#{g.pantheon} #{g.role})*"
       end
       display_results = display_results.empty? ? ['*(No Results)*'] : display_results
-      <<-SEARCH
-### **Search Results** for **#{results[:query]}**
+      <<-GODSEARCH
+### **God Search Results** for **#{results[:query]}**
 ---
 #{display_results.join("\n\n")}
-      SEARCH
+
+---
+[Report Bug](#{bug_report})
+      GODSEARCH
+    end
+
+    def format_item_search_results(results)
+      display_results = results[:result].map do |i| 
+        "**#{i.name}** *(#{item_tag(i)})*"
+      end
+      display_results = display_results.empty? ? ['*(No Results)*'] : display_results
+      <<-ITEMSEARCH
+### **Item Search Results** for **#{results[:query]}**
+---
+#{display_results.join("\n\n")}
+
+---
+[Report Bug](#{bug_report})
+      ITEMSEARCH
     end
 
     private
@@ -132,7 +165,15 @@ class SmiteFormatter
     end
 
     def godflair(god)
-      "[](#/flair#{god.name.downcase.gsub(/[^\w]/,'')})"
+      "[](#/flair#{god.downcase.gsub(/[^\w]/,'')})"
+    end
+
+    def wiki(name)
+      "http://smite.gamepedia.com/#{name}"
+    end
+
+    def bug_report
+      'https://www.reddit.com/r/smiteinfobot/submit?selftext=true&title=[Bug%20Report]%3Cyour_bug_report_here%3E'
     end
   end
 end
