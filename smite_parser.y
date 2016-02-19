@@ -18,35 +18,44 @@ class SmiteParser
     | god_items
 
   god_stats:
-    GOD STATS level_and_items{
+    GOD STATS op_level_and_items{
       result   = Smite::Game.god(val[0]).stats
-      result   = result.at_level(val[2][:level]) if val[2][:level]
-      result   = result.with_items(val[2][:items]) if val[2][:items]
+      result   = result.at_level(val[2][:level])                    if val[2][:level]
+      result   = result.with_items(val[2][:items], val[2][:stacks]) if val[2][:items]
 
       result
     }
-  level_and_items:
-    LEVEL NUM WITH item_list{
-      result = { level: val[1], items: val[3] }
-    }
-    | WITH item_list LEVEL NUM{
-      result = { level: val[3], items: val[1] }
-    }
-    | WITH item_list {
-      result = { items: val[1] }
+  op_level_and_items:
+    LEVEL NUM with_items{
+      result = { level: val[1] }.merge(val[2])
     }
     | LEVEL NUM {
-      result = { level: val[1]}
+      result = { level: val[1] }
     }
+    | with_items
     | {
       result = {}
     }
-  item_list:
-    item_list ',' ITEM {
-      result << Smite::Game.item(val[2])
+  with_items:
+    WITH item_list {
+      stacks = val[1].each_with_object({}) do |(item, num_stacks), hash|
+        hash[item.name.downcase] = num_stacks
+      end
+      items = val[1].map { |pair| pair[0] }
+
+      result = { items: items , stacks: stacks }
     }
-    | ITEM {
-      result = [Smite::Game.item(val[0])]
+  item_list:
+    item_list ',' ITEM op_stacks {
+      result << [Smite::Game.item(val[2]), val[3]]
+    }
+    | ITEM op_stacks {
+      result = [[Smite::Game.item(val[0]), val[1]]]
+    }
+  op_stacks:
+    NUM
+    | { 
+      result = nil
     }
 
   god_ability:
@@ -65,12 +74,12 @@ class SmiteParser
     FIRST | SECOND | THIRD | FOURTH | FIFTH
 
   god_items:
-    GOD RECOMMENDED {
-      recommended_items = Smite::Game.god_recommended_items(val[0])[0].data
+    RECOMMENDED GOD {
+      recommended_items = Smite::Game.god_recommended_items(val[1])[0].data
       result            = { 
         type: 'god_items',
         data: {
-          god:     val[0],
+          god:     val[1],
           result:  recommended_items
         }
       }
@@ -166,108 +175,37 @@ class SmiteParser
         data: { query:  val[0], result: filter }
       }
     }
-
+    | AURA {
+      filter = Smite::Game.devices.select(&:aura?)
+      result = {
+        type: 'itemsearch',
+        data: { query:  val[0], result: filter }
+      }
+    }
+    | STARTER {
+      filter = Smite::Game.devices.select(&:starter?)
+      result = {
+        type: 'itemsearch',
+        data: { query:  val[0], result: filter }
+      }
+    }
+    | STACKING {
+      filter = Smite::Game.devices.select(&:stacking?)
+      result = {
+        type: 'itemsearch',
+        data: { query:  val[0], result: filter }
+      }
+    }
 end
 
-# the 'inner' section defines methods
-# of SmiteParser, since the above
+# the 'inner' section defines the methods
+# of class SmiteParser, since the above
 # definition serves as an override
 # for writing the BNF grammar.
 ---- inner
-  
 def parse(str)
-  @q = []
-  until str.empty?
-    case str
-    when /\A\s+/
-    when /\A(#{items})/i
-      @q.push [:ITEM, $&.downcase]
-    when /\A(#{gods})/i
-      @q.push [:GOD, $&.downcase]
-    when /\A1st/i
-      @q.push [:FIRST, $&.to_i]
-    when /\A2nd/i
-      @q.push [:SECOND, $&.to_i]
-    when /\A3rd/i
-      @q.push [:THIRD, $&.to_i]
-    when /\A4th/i
-      @q.push [:FOURTH, $&.to_i]
-    when /\A5th/i
-      @q.push [:FIFTH, $&.to_i]
-    when /\A\d+/
-      @q.push [:NUM, $&.to_i]
-    when /\Aability\b/i
-      @q.push [:ABILITY, $&.downcase]
-    when /\Aultimate\b/i
-      @q.push [:FOURTH, 4]
-      @q.push [:ABILITY, 'ability']
-    when /\Apassive\b/i
-      @q.push [:PASSIVE, $&.downcase]
-    when /\A(recommended )?items\b/i
-      @q.push [:RECOMMENDED, $&.downcase]
-    when /\Awith\b/i
-      @q.push [:WITH, $&.downcase]
-    when /\Atier\b/i
-      @q.push [:TIER, $&.downcase]
-    when /\Agodsearch\b/i
-      @q.push [:GODSEARCH, $&.downcase]
-    when /\Aitemsearch\b/i
-      @q.push [:ITEMSEARCH, $&.downcase]
-    when /\A(base )?stats/i
-      @q.push [:STATS, $&.downcase]
-    when /\A(at )?level/i
-      @q.push [:LEVEL, $&.downcase]
-    when /\A(#{effects})/i
-      @q.push [:ITEM_EFFECT, $&.downcase]
-    when /\A(#{dmg_types})/i
-      @q.push [:DMG_TYPE, $&.downcase]
-    when /\A(#{atk_ranges})/i
-      @q.push [:ATK_RANGE, $&.downcase]
-    when /\A(#{roles})/i
-      @q.push [:ROLE, $&.downcase]
-    when /\A(#{pantheons})/i
-      @q.push [:PANTHEON, $&.downcase]
-    when /\A./
-      @q.push [$&, $&]
-    end
-    str = $'
-  end
-  @q.push [false, '$end']
+  @q = SmiteLexer.lex!(str)
   do_parse
-end
-
-def dmg_types
-  'physical|magic(al)?'
-end
-
-def atk_ranges
-  'ranged|melee'
-end
-
-def roles
-  @roles ||= Smite::Game.roles.map { |r| r.downcase + '\b' }.join('|')
-end
-
-def pantheons
-  @pantheons ||= Smite::Game.pantheons.map { |p| p.downcase + '\b' }.join('|')
-end
-
-def gods
-  @gods ||= Smite::Game.gods.sort_by(&:length).reverse.map { |g| g.name.downcase + '\b' }.join('|')
-end
-
-def items
-  @items ||= Smite::Game.devices.sort_by(&:length).reverse.map { |d| d.name.downcase + '\b'  }.join('|')
-end
-
-def effects
-  return @effects unless @effects.nil?
-
-  @effects ||= Smite::Game.devices.map(&:effects).flatten.map do |e|
-    e.attribute.downcase.tr('_', ' ')
-  end
-  @effects += ['penetration', 'lifesteal', 'defense', 'power', 'crit', 'movement', 'speed']
-  @effects = @effects.uniq.sort_by(&:length).reverse.join('\b|')
 end
 
 def next_token
@@ -277,3 +215,4 @@ end
 ---- footer
 require 'set'
 require 'smite'
+require_relative './smite_lexer.rb'

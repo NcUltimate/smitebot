@@ -22,7 +22,7 @@ class SmiteFormatter
       <<-GOD
 ### **#{god.name}** *(#{god.pantheon} #{god.role})* -- #{god.title}
 ---
-#{godflair(god.name)} #{god.short_lore}
+#{godflair(god.name)} #{god.short_lore.gsub("\n\n", ' ')}
 
 **Pros:** #{god.pros}
 
@@ -76,7 +76,7 @@ class SmiteFormatter
       items = stats.items.map(&:name).join(', ')
       items = items == '' ? 'No Items' : items
       <<-STATS
-### #{stats.name} God Stats (Level #{stats.level + 1})
+### #{stats.name} God Stats (#{stat_str(stats.level)})
 ---
 #{godflair(stats.name)} **With Items:** *#{items}*
 
@@ -98,7 +98,7 @@ class SmiteFormatter
       item_data = item_data.slice(*%w[starter core damage defensive relic])
       keys, table = build_item_table(item_data)      
       <<-GODITEMS
-### **Recommended Items** for **#{god_item_data[:god].capitalize}**
+### #{godflair(god_item_data[:god])}**Recommended Items** for **#{god_item_data[:god].capitalize}**
 ---
 #{keys}
 | :---: | :---: | :---: | :---: | :---: |
@@ -162,6 +162,10 @@ class SmiteFormatter
       item_data  = item_data.map { |tab| '|' + tab.join('|') + "|\n" }
 
       [keys, item_data]
+    end
+
+    def stat_str(level)
+      level == 0 ? 'Base Stats' : "Level #{level}"
     end
 
     def godflair(god)
