@@ -88,7 +88,7 @@ class SmiteBot
     comments.each do |comment|
       comment[:requests].map! do |req|
         parsed = parser.parse(req) rescue nil
-        next nil unless parsed
+        next "" unless parsed
 
         SmiteFormatter.format!(parsed) rescue nil
       end
@@ -108,7 +108,7 @@ class SmiteBot
         # posts = get_top_100_posts
         # posts.each_with_index do |post_id, idx|
           puts "Finding comments that need reply..."
-          comments = comments_that_need_reply('45zfo2')
+          comments = comments_that_need_reply('46ijc6')
           sleep(2)
           next if comments.empty?
 

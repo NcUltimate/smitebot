@@ -7,7 +7,7 @@
 require 'racc/parser.rb'
 class SmiteParser < Racc::Parser
 
-module_eval(<<'...end smite_parser.y/module_eval...', 'smite_parser.y', 206)
+module_eval(<<'...end smite_parser.y/module_eval...', 'smite_parser.y', 211)
 def parse(str)
   @q = SmiteLexer.lex!(str)
   do_parse
@@ -21,50 +21,52 @@ end
 ##### State transition tables begin ###
 
 racc_action_table = [
-     7,    16,    28,    29,    30,    31,    12,    18,    19,    20,
-    21,    22,    23,    24,    11,    13,    36,    42,    50,    44,
-    14,    34,    35,    37,    38,    39,    36,    28,    29,    30,
-    31,    34,    35,    37,    38,    39,    45,    46,    25,    15,
-    49,    40,    52,    44,    54,    56,    57,    56 ]
+     7,    17,    49,    44,    18,    18,    12,    20,    21,    22,
+    23,    24,    25,    26,    11,    13,    38,    47,    48,    42,
+    14,    36,    37,    39,    40,    41,    38,    30,    31,    32,
+    33,    36,    37,    39,    40,    41,    30,    31,    32,    33,
+    27,    15,    52,    53,    54,    56,    18,    58,    56 ]
 
 racc_action_check = [
-     0,     7,    13,    13,    13,    13,     0,     7,     7,     7,
-     7,     7,     7,     7,     0,     0,    32,    16,    42,    16,
-     0,    32,    32,    32,    32,    32,    14,    26,    26,    26,
-    26,    14,    14,    14,    14,    14,    17,    18,    11,     1,
-    35,    15,    44,    50,    51,    52,    54,    57 ]
+     0,     7,    20,    17,     7,    17,     0,     7,     7,     7,
+     7,     7,     7,     7,     0,     0,    34,    18,    19,    15,
+     0,    34,    34,    34,    34,    34,    14,    13,    13,    13,
+    13,    14,    14,    14,    14,    14,    28,    28,    28,    28,
+    11,     1,    37,    44,    46,    47,    53,    54,    58 ]
 
 racc_action_pointer = [
-    -2,    39,   nil,   nil,   nil,   nil,   nil,    -2,   nil,   nil,
-   nil,    36,   nil,   -16,     8,    41,    13,    27,    32,   nil,
-   nil,   nil,   nil,   nil,   nil,   nil,     9,   nil,   nil,   nil,
-   nil,   nil,    -2,   nil,   nil,    35,   nil,   nil,   nil,   nil,
-   nil,   nil,    13,   nil,    34,   nil,   nil,   nil,   nil,   nil,
-    37,    37,    40,   nil,    38,   nil,   nil,    42,   nil ]
+    -2,    41,   nil,   nil,   nil,   nil,   nil,    -2,   nil,   nil,
+   nil,    38,   nil,     9,     8,    19,   nil,    -1,     9,     9,
+    -3,   nil,   nil,   nil,   nil,   nil,   nil,   nil,    18,   nil,
+   nil,   nil,   nil,   nil,    -2,   nil,   nil,    37,   nil,   nil,
+   nil,   nil,   nil,   nil,    38,   nil,    37,    40,   nil,   nil,
+   nil,   nil,   nil,    40,    39,   nil,   nil,   nil,    43,   nil ]
 
 racc_action_default = [
-   -46,   -46,    -1,    -2,    -3,    -4,    -5,    -6,    -7,    -8,
-    -9,   -46,   -29,   -46,   -46,   -46,   -14,   -46,   -46,   -22,
-   -23,   -24,   -25,   -26,   -27,   -28,   -30,   -32,   -33,   -34,
-   -35,   -36,   -37,   -39,   -40,   -46,   -42,   -43,   -44,   -45,
-    59,   -10,   -46,   -13,   -46,   -20,   -21,   -31,   -38,   -41,
-   -12,   -15,   -19,   -11,   -46,   -17,   -18,   -19,   -16 ]
+   -47,   -47,    -1,    -2,    -3,    -4,    -5,    -6,    -7,    -8,
+    -9,   -47,   -30,   -47,   -47,   -47,   -10,   -15,   -47,   -47,
+   -47,   -23,   -24,   -25,   -26,   -27,   -28,   -29,   -31,   -33,
+   -34,   -35,   -36,   -37,   -38,   -40,   -41,   -47,   -43,   -44,
+   -45,   -46,    60,   -11,   -47,   -14,   -16,   -20,   -21,   -22,
+   -32,   -39,   -42,   -13,   -47,   -18,   -19,   -12,   -20,   -17 ]
 
 racc_goto_table = [
-    43,    33,    27,    55,    41,     6,     8,     9,    58,    10,
-     5,     4,    51,     3,    17,    47,    26,     2,    32,    48,
-     1,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
-   nil,   nil,   nil,   nil,    53 ]
+    16,    35,    29,    55,    43,     6,     8,     9,    10,     2,
+    45,     5,    46,     3,    59,    19,    28,    50,     4,    34,
+     1,    51,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,   nil,   nil,   nil,   nil,    57 ]
 
 racc_goto_check = [
-    11,    18,    16,    13,    10,     6,     7,     8,    13,     9,
-     5,     4,    12,     3,    14,    16,    15,     2,    17,    18,
-     1,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
-   nil,   nil,   nil,   nil,    11 ]
+    10,    18,    16,    13,    11,     6,     7,     8,     9,     2,
+    10,     5,    12,     3,    13,    14,    15,    16,     4,    17,
+     1,    18,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,   nil,   nil,   nil,   nil,    10 ]
 
 racc_goto_pointer = [
-   nil,    20,    17,    13,    11,    10,     5,     6,     7,     9,
-   -12,   -16,   -32,   -49,     7,     3,   -11,     4,   -13 ]
+   nil,    20,     9,    13,    18,    11,     5,     6,     7,     8,
+    -7,   -13,    -6,   -44,     8,     3,   -11,     5,   -13 ]
 
 racc_goto_default = [
    nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
@@ -81,46 +83,47 @@ racc_reduce_table = [
   1, 31, :_reduce_none,
   1, 31, :_reduce_none,
   1, 31, :_reduce_none,
-  3, 36, :_reduce_10,
-  3, 38, :_reduce_11,
-  2, 38, :_reduce_12,
-  1, 38, :_reduce_none,
-  0, 38, :_reduce_14,
-  2, 39, :_reduce_15,
-  4, 40, :_reduce_16,
-  2, 40, :_reduce_17,
+  2, 36, :_reduce_10,
+  3, 36, :_reduce_11,
+  3, 39, :_reduce_12,
+  2, 39, :_reduce_13,
+  1, 39, :_reduce_none,
+  0, 39, :_reduce_15,
+  2, 38, :_reduce_16,
+  4, 40, :_reduce_17,
+  2, 40, :_reduce_18,
   1, 41, :_reduce_none,
-  0, 41, :_reduce_19,
-  3, 35, :_reduce_20,
+  0, 41, :_reduce_20,
   3, 35, :_reduce_21,
-  2, 35, :_reduce_22,
+  3, 35, :_reduce_22,
+  2, 35, :_reduce_23,
   1, 42, :_reduce_none,
   1, 42, :_reduce_none,
   1, 42, :_reduce_none,
   1, 42, :_reduce_none,
   1, 42, :_reduce_none,
-  2, 37, :_reduce_28,
-  1, 32, :_reduce_29,
-  2, 33, :_reduce_30,
-  2, 43, :_reduce_31,
+  2, 37, :_reduce_29,
+  1, 32, :_reduce_30,
+  2, 33, :_reduce_31,
+  2, 43, :_reduce_32,
   1, 43, :_reduce_none,
-  1, 44, :_reduce_33,
   1, 44, :_reduce_34,
   1, 44, :_reduce_35,
   1, 44, :_reduce_36,
-  2, 34, :_reduce_37,
-  2, 45, :_reduce_38,
+  1, 44, :_reduce_37,
+  2, 34, :_reduce_38,
+  2, 45, :_reduce_39,
   1, 45, :_reduce_none,
-  1, 46, :_reduce_40,
-  2, 46, :_reduce_41,
-  1, 46, :_reduce_42,
+  1, 46, :_reduce_41,
+  2, 46, :_reduce_42,
   1, 46, :_reduce_43,
   1, 46, :_reduce_44,
-  1, 46, :_reduce_45 ]
+  1, 46, :_reduce_45,
+  1, 46, :_reduce_46 ]
 
-racc_reduce_n = 46
+racc_reduce_n = 47
 
-racc_shift_n = 59
+racc_shift_n = 60
 
 racc_token_table = {
   false => 0,
@@ -130,7 +133,7 @@ racc_token_table = {
   :LEVEL => 4,
   :NUM => 5,
   :WITH => 6,
-  "," => 7,
+  :COMMA => 7,
   :ITEM => 8,
   :ABILITY => 9,
   :PASSIVE => 10,
@@ -180,7 +183,7 @@ Racc_token_to_s_table = [
   "LEVEL",
   "NUM",
   "WITH",
-  "\",\"",
+  "COMMA",
   "ITEM",
   "ABILITY",
   "PASSIVE",
@@ -211,8 +214,8 @@ Racc_token_to_s_table = [
   "god_ability",
   "god_stats",
   "god_items",
-  "op_level_and_items",
   "with_items",
+  "op_level_and_items",
   "item_list",
   "op_stacks",
   "nth",
@@ -254,6 +257,16 @@ module_eval(<<'.,.,', 'smite_parser.y', 13)
 module_eval(<<'.,.,', 'smite_parser.y', 21)
   def _reduce_10(val, _values, result)
           result   = Smite::Game.god(val[0]).stats
+      result   = result.with_items(val[1][:items], val[1][:stacks])
+      result
+    
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'smite_parser.y', 26)
+  def _reduce_11(val, _values, result)
+          result   = Smite::Game.god(val[0]).stats
       result   = result.at_level(val[2][:level])                    if val[2][:level]
       result   = result.with_items(val[2][:items], val[2][:stacks]) if val[2][:items]
 
@@ -263,34 +276,34 @@ module_eval(<<'.,.,', 'smite_parser.y', 21)
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 29)
-  def _reduce_11(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 34)
+  def _reduce_12(val, _values, result)
           result = { level: val[1] }.merge(val[2])
     
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 32)
-  def _reduce_12(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 37)
+  def _reduce_13(val, _values, result)
           result = { level: val[1] }
     
     result
   end
 .,.,
 
-# reduce 13 omitted
+# reduce 14 omitted
 
-module_eval(<<'.,.,', 'smite_parser.y', 36)
-  def _reduce_14(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 41)
+  def _reduce_15(val, _values, result)
           result = {}
     
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 40)
-  def _reduce_15(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 45)
+  def _reduce_16(val, _values, result)
           stacks = val[1].each_with_object({}) do |(item, num_stacks), hash|
         hash[item.name.downcase] = num_stacks
       end
@@ -302,34 +315,34 @@ module_eval(<<'.,.,', 'smite_parser.y', 40)
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 49)
-  def _reduce_16(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 54)
+  def _reduce_17(val, _values, result)
           result << [Smite::Game.item(val[2]), val[3]]
     
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 52)
-  def _reduce_17(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 57)
+  def _reduce_18(val, _values, result)
           result = [[Smite::Game.item(val[0]), val[1]]]
     
     result
   end
 .,.,
 
-# reduce 18 omitted
+# reduce 19 omitted
 
-module_eval(<<'.,.,', 'smite_parser.y', 57)
-  def _reduce_19(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 62)
+  def _reduce_20(val, _values, result)
           result = nil
     
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 62)
-  def _reduce_20(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 67)
+  def _reduce_21(val, _values, result)
           which = (val[1] - 1) % 5
       result = Smite::Game.god(val[0]).abilities[which]
     
@@ -337,8 +350,8 @@ module_eval(<<'.,.,', 'smite_parser.y', 62)
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 66)
-  def _reduce_21(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 71)
+  def _reduce_22(val, _values, result)
           which = (val[2] - 1) % 5
       result = Smite::Game.god(val[0]).abilities[which]
     
@@ -346,15 +359,13 @@ module_eval(<<'.,.,', 'smite_parser.y', 66)
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 70)
-  def _reduce_22(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 75)
+  def _reduce_23(val, _values, result)
           result = Smite::Game.god(val[0]).abilities[4]
     
     result
   end
 .,.,
-
-# reduce 23 omitted
 
 # reduce 24 omitted
 
@@ -364,8 +375,10 @@ module_eval(<<'.,.,', 'smite_parser.y', 70)
 
 # reduce 27 omitted
 
-module_eval(<<'.,.,', 'smite_parser.y', 77)
-  def _reduce_28(val, _values, result)
+# reduce 28 omitted
+
+module_eval(<<'.,.,', 'smite_parser.y', 82)
+  def _reduce_29(val, _values, result)
           recommended_items = Smite::Game.god_recommended_items(val[1])[0].data
       result            = { 
         type: 'god_items',
@@ -379,23 +392,23 @@ module_eval(<<'.,.,', 'smite_parser.y', 77)
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 89)
-  def _reduce_29(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 94)
+  def _reduce_30(val, _values, result)
           result = Smite::Game.item(val[0])
     
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 93)
-  def _reduce_30(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 98)
+  def _reduce_31(val, _values, result)
      result = val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 96)
-  def _reduce_31(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 101)
+  def _reduce_32(val, _values, result)
           query         = val[0][:data][:query] + ' ' + val[1][:data][:query]
       search_result = Set.new(val[0][:data][:result]) & Set.new(val[1][:data][:result])
       result = { type: 'godsearch', data: { query: query, result: search_result.to_a } }
@@ -404,10 +417,10 @@ module_eval(<<'.,.,', 'smite_parser.y', 96)
   end
 .,.,
 
-# reduce 32 omitted
+# reduce 33 omitted
 
-module_eval(<<'.,.,', 'smite_parser.y', 103)
-  def _reduce_33(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 108)
+  def _reduce_34(val, _values, result)
           filter = Smite::Game.gods.select do |g|
         val[0] =~ /phys/ ? g.physical? : g.magic?
       end
@@ -420,8 +433,8 @@ module_eval(<<'.,.,', 'smite_parser.y', 103)
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 112)
-  def _reduce_34(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 117)
+  def _reduce_35(val, _values, result)
           filter = Smite::Game.gods.select do |g|
         val[0] =~ /melee/ ? g.melee? : g.ranged?
       end
@@ -434,8 +447,8 @@ module_eval(<<'.,.,', 'smite_parser.y', 112)
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 121)
-  def _reduce_35(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 126)
+  def _reduce_36(val, _values, result)
           filter = Smite::Game.gods.select do |g|
         val[0].downcase == g.role.downcase
       end
@@ -448,8 +461,8 @@ module_eval(<<'.,.,', 'smite_parser.y', 121)
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 130)
-  def _reduce_36(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 135)
+  def _reduce_37(val, _values, result)
           filter = Smite::Game.gods.select do |g|
         val[0].downcase == g.pantheon.downcase
       end
@@ -462,15 +475,15 @@ module_eval(<<'.,.,', 'smite_parser.y', 130)
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 141)
-  def _reduce_37(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 146)
+  def _reduce_38(val, _values, result)
      result = val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 144)
-  def _reduce_38(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 149)
+  def _reduce_39(val, _values, result)
           query         = val[0][:data][:query] + ' ' + val[1][:data][:query]
       search_result = Set.new(val[0][:data][:result]) & Set.new(val[1][:data][:result])
       result = { type: 'itemsearch', data: { query: query, result: search_result.to_a } }
@@ -479,10 +492,10 @@ module_eval(<<'.,.,', 'smite_parser.y', 144)
   end
 .,.,
 
-# reduce 39 omitted
+# reduce 40 omitted
 
-module_eval(<<'.,.,', 'smite_parser.y', 151)
-  def _reduce_40(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 156)
+  def _reduce_41(val, _values, result)
           filter = Smite::Game.devices.select do |i|
         i.effects.map(&:attribute).any? do |eff|
           eff.tr('_', ' ') =~ /#{val[0]}/
@@ -497,8 +510,8 @@ module_eval(<<'.,.,', 'smite_parser.y', 151)
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 162)
-  def _reduce_41(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 167)
+  def _reduce_42(val, _values, result)
           filter = Smite::Game.devices.select { |i| i.tier == val[1] }
       result = {
         type: 'itemsearch',
@@ -509,8 +522,8 @@ module_eval(<<'.,.,', 'smite_parser.y', 162)
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 169)
-  def _reduce_42(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 174)
+  def _reduce_43(val, _values, result)
           filter = Smite::Game.devices.select do |i|
         val[0] =~ /magic/ ? i.magic? : i.physical?
       end
@@ -523,8 +536,8 @@ module_eval(<<'.,.,', 'smite_parser.y', 169)
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 178)
-  def _reduce_43(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 183)
+  def _reduce_44(val, _values, result)
           filter = Smite::Game.devices.select(&:aura?)
       result = {
         type: 'itemsearch',
@@ -535,8 +548,8 @@ module_eval(<<'.,.,', 'smite_parser.y', 178)
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 185)
-  def _reduce_44(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 190)
+  def _reduce_45(val, _values, result)
           filter = Smite::Game.devices.select(&:starter?)
       result = {
         type: 'itemsearch',
@@ -547,8 +560,8 @@ module_eval(<<'.,.,', 'smite_parser.y', 185)
   end
 .,.,
 
-module_eval(<<'.,.,', 'smite_parser.y', 192)
-  def _reduce_45(val, _values, result)
+module_eval(<<'.,.,', 'smite_parser.y', 197)
+  def _reduce_46(val, _values, result)
           filter = Smite::Game.devices.select(&:stacking?)
       result = {
         type: 'itemsearch',
