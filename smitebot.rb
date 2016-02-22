@@ -96,7 +96,7 @@ class SmiteBot
     comments.each do |comment|
       next if comment[:requests].compact.empty?
 
-      puts "Commenting on t1_#{comment[:id]}"
+      puts "\t(!) Commenting on t1_#{comment[:id]}"
       reddit.comment(comment[:requests].join("\n\n"), 't1_'+comment[:id])
       sleep(2)
     end
@@ -105,14 +105,15 @@ class SmiteBot
   def run!
     loop do
       begin
+        timestamp = Time.now.strftime('%Y-%m-%d %I:%M:%S')
+        puts timestamp + " Finding comments that need reply..."
         posts = get_top_100_posts
         posts.each_with_index do |post_id, idx|
-          puts "(#{idx} / #{posts.count}) Finding comments that need reply..."
           comments = comments_that_need_reply(post_id)
           sleep(2)
           next if comments.empty?
 
-          puts "processing replies..."
+          puts "(!) processing replies for t3_#{post_id}"
           process_replies(comments)
         end
       rescue

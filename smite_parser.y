@@ -18,9 +18,11 @@ class SmiteParser
     | god_items
 
   god_stats:
-    GOD with_items {
+    GOD level_and_items {
       result   = Smite::Game.god(val[0]).stats
-      result   = result.with_items(val[1][:items], val[1][:stacks])
+      result   = result.at_level(val[1][:level])                    if val[1][:level]
+      result   = result.with_items(val[1][:items], val[1][:stacks]) if val[1][:items]
+
       result
     }
     | GOD STATS op_level_and_items {
@@ -31,6 +33,11 @@ class SmiteParser
       result
     }
   op_level_and_items:
+    level_and_items
+    | {
+      result = {}
+    }
+  level_and_items:
     LEVEL NUM with_items{
       result = { level: val[1] }.merge(val[2])
     }
@@ -38,9 +45,7 @@ class SmiteParser
       result = { level: val[1] }
     }
     | with_items
-    | {
-      result = {}
-    }
+
   with_items:
     WITH item_list {
       stacks = val[1].each_with_object({}) do |(item, num_stacks), hash|

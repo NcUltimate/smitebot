@@ -5,11 +5,17 @@ require 'levenshtein'
 class SmiteLexer
   class << self
     def lex!(str)
-      str = str.downcase.gsub(/[^\w\',\s]/, '')
+      str = str.downcase.gsub(/[^\w,\s]/, '')
+      str = str.gsub(/,(.+?)( \d+)?(?=,|\z)/) { |match| match.tr(' ','') }
+      str = str.gsub(/(?<=with )(.+?)( \d+)?(?=,|\z)/) { |match| match.tr(' ','') }
+
       queue = []
       until str.empty?
         case str
-        when /\A\s+/
+        when /\A\s+/ 
+        # Items and Gods
+        when /\A(#{items})/i        then queue.push [:ITEM, $&]
+        when /\A(#{gods})/i         then queue.push [:GOD, $&]
 
         # Item and God Search
         when /\A(#{effects})/i      then queue.push [:ITEM_EFFECT, $&]
@@ -39,16 +45,15 @@ class SmiteLexer
 
         # God Stats
         when /\A(base )?stats/i     then queue.push [:STATS, $&]
-        when /\A(at )?level/i       then queue.push [:LEVEL, $&]
+        when /\A(at )?l(evel|vl)/i  then queue.push [:LEVEL, $&]
         when /\Awith\b/i            then queue.push [:WITH, $&]
-        when /\A,/                  then queue.push [:COMMA, $&]
+        when /\A(,|and)/            then queue.push [:COMMA, $&]
 
         # Recommended Items
         when /\Aitems for\b/i       then queue.push [:RECOMMENDED, $&]
 
         # Misspelled god
-        when /\A.+?(?= (stats|with|ability|1st|2nd|3rd|4th|5th|ultimate|passive))/i
-          puts "A GOD WAS ENTERED: " + $&
+        when /\A.+?(?= (at|level|lvl|base|stats|with|ability|1st|2nd|3rd|4th|5th|ultimate|passive))/i
           closest = closest_god_to($&)
           queue.push [closest[1], closest[0].name]
 
@@ -97,6 +102,20 @@ class SmiteLexer
       'ranged|melee'
     end
 
+    def gods
+      return @gods unless @gods.nil?
+
+      @gods = Smite::Game.gods.map(&:name).sort_by(&:length).reverse
+      @gods = @gods.map { |g| g.downcase  + '\b' }.join('|')
+    end
+
+    def items
+      return @items unless @items.nil?
+
+      @items = Smite::Game.devices.map(&:name).sort_by(&:length).reverse
+      @items = @items.map { |d| d.downcase.gsub(/[^\w]/,'') }.join('|')
+    end
+
     def roles
       @roles ||= Smite::Game.roles.map { |r| r.downcase + '\b' }.join('|')
     end
@@ -109,7 +128,7 @@ class SmiteLexer
       return @effects unless @effects.nil?
 
       @effects ||= Smite::Game.item_effects.map { |e| e.tr('_', ' ') }
-      @effects += ['penetration', 'lifesteal', 'defense', 'power', 'crit', 'movement', 'speed']
+      @effects += ['penetration', 'lifesteal', 'defense', 'power', 'crit', 'movement', 'speed', 'cooldown']
       @effects = @effects.sort_by(&:length).reverse.join('\b|')
     end
   end
