@@ -73,7 +73,7 @@ class SmiteFormatter
     end
 
     def format_god_stats(stats)
-      items = stats.items.map(&:name).join(', ')
+      items = items_and_stacks(stats).join(', ')
       items = items == '' ? 'No Items' : items
       <<-STATS
 ### #{stats.name} God Stats (#{stat_str(stats.level)})
@@ -142,6 +142,13 @@ class SmiteFormatter
     end
 
     private
+
+    def items_and_stacks(stats)
+      stats.items.map do |item|
+        name = item.name.downcase
+        "#{name}" + (item.stacking? ? " (#{stats.stacks[name]} stacks)" : '')
+      end
+    end
 
     def item_tag(item)
       if item.cost == 0

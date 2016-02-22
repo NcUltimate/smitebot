@@ -23,7 +23,7 @@ class SmiteParser
       result   = result.with_items(val[1][:items], val[1][:stacks])
       result
     }
-    | GOD STATS op_level_and_items{
+    | GOD STATS op_level_and_items {
       result   = Smite::Game.god(val[0]).stats
       result   = result.at_level(val[2][:level])                    if val[2][:level]
       result   = result.with_items(val[2][:items], val[2][:stacks]) if val[2][:items]

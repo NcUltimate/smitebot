@@ -11,10 +11,6 @@ class SmiteLexer
         case str
         when /\A\s+/
 
-        # Items and Gods
-        when /\A(#{items})/i        then queue.push [:ITEM, $&]
-        when /\A(#{gods})/i         then queue.push [:GOD, $&]
-
         # Item and God Search
         when /\A(#{effects})/i      then queue.push [:ITEM_EFFECT, $&]
         when /\A(#{dmg_types})/i    then queue.push [:DMG_TYPE, $&]
@@ -56,7 +52,7 @@ class SmiteLexer
           queue.push [closest[1], closest[0].name]
 
         # Misspelled item
-        when /\A[^,]+/i
+        when /\A[^,\d]+/i
           closest = if !queue.empty? && [:WITH, :COMMA].include?(queue[-1][0])
             closest_item_to($&)
           else
@@ -106,20 +102,6 @@ class SmiteLexer
 
     def pantheons
       @pantheons ||= Smite::Game.pantheons.map { |p| p.downcase + '\b' }.join('|')
-    end
-
-    def gods
-      return @gods unless @gods.nil?
-
-      @gods = Smite::Game.gods.map(&:name).sort_by(&:length).reverse
-      @gods = @gods.map { |g| g.downcase + '\b' }.join('|')
-    end
-
-    def items
-      return @items unless @items.nil?
-
-      @items = Smite::Game.devices.map(&:name).sort_by(&:length).reverse
-      @items = @items.map { |d| d.downcase + '\b' }.join('|')
     end
 
     def effects
