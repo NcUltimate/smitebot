@@ -22,7 +22,7 @@ class SmiteFormatter
       <<-GOD
 ### **#{god.name}** *(#{god.pantheon} #{god.role})* -- #{god.title}
 ---
-#{godflair(god.name)} #{god.short_lore.gsub("\n\n", ' ')}
+#{godflair(god.name)} #{god.short_lore.gsub('\n\n', ' ')}
 
 **Pros:** #{god.pros}
 

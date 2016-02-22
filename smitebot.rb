@@ -105,16 +105,17 @@ class SmiteBot
   def run!
     loop do
       begin
-        # posts = get_top_100_posts
-        # posts.each_with_index do |post_id, idx|
-          puts "Finding comments that need reply..."
-          comments = comments_that_need_reply('46ijc6')
+        posts = get_top_100_posts
+        posts.each_with_index do |post_id, idx|
+          puts "(#{idx} / #{posts.count}) Finding comments that need reply..."
+          comments = comments_that_need_reply(post_id)
           sleep(2)
           next if comments.empty?
 
           puts "processing replies..."
           process_replies(comments)
-        # end
+        end
+      rescue
       ensure
         sleep(10)
       end

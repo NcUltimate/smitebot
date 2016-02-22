@@ -47,7 +47,8 @@ class SmiteLexer
         when /\Aitems for\b/i       then queue.push [:RECOMMENDED, $&]
 
         # Misspelled god
-        when /\A.+(?= (stats|with))/i
+        when /\A.+?(?= (stats|with|ability|1st|2nd|3rd|4th|5th|ultimate|passive))/i
+          puts "A GOD WAS ENTERED: " + $&
           closest = closest_god_to($&)
           queue.push [closest[1], closest[0].name]
 
